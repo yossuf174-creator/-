@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidDownload(data, userId) {
+      return data.keys().hasAll(['id', 'name', 'platform', 'format', 'url', 'userId'])
+        && data.keys().hasOnly(['id', 'name', 'platform', 'format', 'size', 'date', 'speed', 'status', 'url', 'createdAt', 'userId'])
+        && data.userId == userId
+        && data.userId == request.auth.uid
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 300
+        && data.platform is string && data.platform.size() <= 50
+        && data.format is string && data.format.size() <= 50
+        && data.url is string && data.url.size() <= 2048;
+    }
+
+    function isValidReminder(data, userId) {
+      return data.keys().hasAll(['id', 'title', 'url', 'reminderTime', 'userId'])
+        && data.keys().hasOnly(['id', 'title', 'url', 'reminderTime', 'status', 'createdAt', 'userId'])
+        && data.userId == userId
+        && data.userId == request.auth.uid
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.url is string && data.url.size() <= 2048
+        && data.reminderTime is string && data.reminderTime.size() <= 100;
+    }
+
+    function isValidPreference(data) {
+      return data.keys().hasAll(['selectedServerId', 'language'])
+        && data.keys().hasOnly(['selectedServerId', 'fastDownloadMode', 'language', 'defaultFormat', 'mergeSubtitles', 'updatedAt'])
+        && data.selectedServerId is string && data.selectedServerId.size() <= 50
+        && data.language in ['ar', 'en'];
+    }
+
+    // User scope
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+
+      // Downloads subcollection
+      match /downloads/{downloadId} {
+        allow get, delete: if isOwner(userId) && isValidId(userId) && isValidId(downloadId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(downloadId) && isValidDownload(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(userId) && isValidId(downloadId) && isValidDownload(incoming(), userId);
+      }
+
+      // Reminders subcollection
+      match /reminders/{reminderId} {
+        allow get, delete: if isOwner(userId) && isValidId(userId) && isValidId(reminderId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(reminderId) && isValidReminder(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(userId) && isValidId(reminderId) && isValidReminder(incoming(), userId);
+      }
+
+      // Preferences single document
+      match /preferences/{prefId} {
+        allow get, delete: if isOwner(userId) && isValidId(userId) && isValidId(prefId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(prefId) && isValidPreference(incoming());
+        allow update: if isOwner(userId) && isValidId(userId) && isValidId(prefId) && isValidPreference(incoming());
+      }
+    }
+  }
+}

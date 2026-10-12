@@ -1,0 +1,138 @@
+{
+  "entities": {
+    "downloadItem": {
+      "title": "Download Item",
+      "description": "Information about a downloaded or extracted video item",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the download item"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name or title of the media"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Platform source (e.g., YouTube, TikTok, Instagram)"
+        },
+        "format": {
+          "type": "string",
+          "description": "Video or audio quality/format (e.g., 1080p, MP3)"
+        },
+        "size": {
+          "type": "string",
+          "description": "Formatted file size string"
+        },
+        "date": {
+          "type": "string",
+          "description": "Display date string"
+        },
+        "speed": {
+          "type": "string",
+          "description": "Download speed calculation"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of download (completed, downloading, queued)"
+        },
+        "url": {
+          "type": "string",
+          "description": "Source video URL"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID"
+        }
+      },
+      "required": ["id", "name", "platform", "format", "url", "userId"]
+    },
+    "reminder": {
+      "title": "Scheduled Reminder",
+      "description": "Scheduled reminder for downloading a video later",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique reminder identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Reminder label or description"
+        },
+        "url": {
+          "type": "string",
+          "description": "Video URL to download later"
+        },
+        "reminderTime": {
+          "type": "string",
+          "description": "Scheduled ISO timestamp for notification"
+        },
+        "status": {
+          "type": "string",
+          "description": "Reminder status (pending, completed, dismissed)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation ISO timestamp"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID"
+        }
+      },
+      "required": ["id", "title", "url", "reminderTime", "userId"]
+    },
+    "userPreference": {
+      "title": "User Preference",
+      "description": "Persisted user settings and configuration",
+      "type": "object",
+      "properties": {
+        "selectedServerId": {
+          "type": "string",
+          "description": "Active Google Maps CDN server node ID"
+        },
+        "fastDownloadMode": {
+          "type": "boolean",
+          "description": "Whether fast download mode is enabled"
+        },
+        "language": {
+          "type": "string",
+          "description": "Interface language (ar or en)"
+        },
+        "defaultFormat": {
+          "type": "string",
+          "description": "Default download quality/format"
+        },
+        "mergeSubtitles": {
+          "type": "boolean",
+          "description": "Whether to merge subtitles automatically"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last updated ISO timestamp"
+        }
+      },
+      "required": ["selectedServerId", "language"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/downloads/{downloadId}": {
+      "schema": "downloadItem",
+      "description": "User media downloads and history"
+    },
+    "/users/{userId}/reminders/{reminderId}": {
+      "schema": "reminder",
+      "description": "User scheduled download reminders"
+    },
+    "/users/{userId}/preferences/general": {
+      "schema": "userPreference",
+      "description": "User application preferences and active server node"
+    }
+  }
+}

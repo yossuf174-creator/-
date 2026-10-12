@@ -1,0 +1,8 @@
+{
+  "name": "بوت التحميل الشامل",
+  "description": "تطبيق ويب لتحميل الفيديوهات من مختلف المواقع (يوتيوب، تيك توك، تويتر، انستغرام، وغيرها).",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
